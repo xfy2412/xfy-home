@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XFY · xfyweb</title>
+<meta name="description" content="XFY（xfy2412）：器不在大，适用则灵。自用的小工具、几台服务器，以及一个组织 xfyweb。">
+<meta name="theme-color" content="#0a0e0c">
+<meta property="og:title" content="XFY · xfyweb">
+<meta property="og:description" content="器不在大，适用则灵。">
+<meta property="og:type" content="website">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<div class="win" role="region" aria-label="终端">
+  <div class="bar">
+    <i class="r"></i><i class="y"></i><i class="g"></i>
+    <span id="wintitle">xfy@web: ~</span>
+    <span class="bar-right" id="clock"></span>
+  </div>
+
+  <div class="term" id="term">
+    <div class="out" id="out"></div>
+    <div class="prompt" id="promptline">
+      <span class="ps1" id="ps1"><span class="u">xfy</span><span class="p">@</span><span class="h">web</span><span class="p">:~$</span></span>
+      <span class="ipwrap">
+        <input id="cmd" autocomplete="off" autocapitalize="off" autocorrect="off"
+               spellcheck="false" aria-label="命令输入">
+        <span class="cursor" id="cursor" aria-hidden="true"></span>
+        <span class="mirror" id="mirror" aria-hidden="true"></span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<noscript>
+  <div class="noscript">
+    <h1>XFY · xfyweb</h1>
+    <p>器不在大，适用则灵。</p>
+    <p>这个主页是个终端模拟器，需要 JavaScript。静态信息如下：</p>
+    <ul>
+      <li>GitHub：<a href="https://github.com/xfy2412">github.com/xfy2412</a>（组织 <a href="https://github.com/xfyweb">xfyweb</a>）</li>
+      <li>项目：ServerPluginCore、RandomDice、MQ-Ecosystem、node_status_server、AUL、XFYUsbKey、WorkTimer、DevEnvSetup</li>
+      <li>MQE 文档：<a href="https://mqe.xfyweb.cn/docs/">mqe.xfyweb.cn/docs</a></li>
+    </ul>
+  </div>
+</noscript>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
