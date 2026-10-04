@@ -28,7 +28,7 @@ export const PROJECTS: Project[] = [
     dir: 'ServerPluginCore/',
     name: 'ServerPluginCore',
     desc: '插件驱动的服务器管理平台——极简核心、沙盒化插件',
-    tag: 'ts · 私有',
+    tag: 'ts · 即将开源',
     logo: './brand/spc-logo.svg',
     body: `# ServerPluginCore
 
@@ -80,9 +80,6 @@ QQ 驱动的 Minecraft 登录、账户管理与互通体系。目前完成度最
 | QQAuth | Limbo 认证、QQ 绑定/验证码、正版/基岩、防御体系、群聊互通 | Velocity |
 | QQHub | 远程命令、性能监控、playerdata 查询 | Paper |
 | AuthClient-N | 模组认证握手、设备凭证、凭证连接 UI | NeoForge |
-| license-server | 下载/授权服务器：双通道、一言水印、挑战鉴权 | Node + SQLite |
-| mqe-panel | 许可证管理面板 | React |
-| mqe-download | 下载中心与文档站 | Vue + VitePress |
 
 付费为实例付费与超前点播月卡并行：基础实例 10 元，扩展实例 3 元；
 正式发布的功能永久免费，月卡只用于尚未公测的预览功能。
@@ -142,7 +139,6 @@ git clone 之后 npm install && npm start 就完了，监听 3000。
 
 - XFYUsbKey.CredentialProvider：C++ COM DLL，锁屏界面的认证磁贴
 - XFYUsbKey.Manager：C# WPF 的密钥管理配置工具
-- tools/deploy.ps1：VM 内一键部署
 `,
   },
   {

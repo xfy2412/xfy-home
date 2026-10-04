@@ -1,9 +1,5 @@
 /**
  * 命令实现。
- *
- * 设计原则：命令不认识"剧情"，它们只知道文件系统。
- * 所以 `ls -a` 会多出 .pychess.py，`cat .pychess.py` 会打出源码，
- * `python .pychess.py` 会把源码跑起来 —— 全都是文件系统的自然结果。
  */
 import { Terminal, esc, linkify, type Command } from './terminal'
 import { HOME, ROOT, list, resolve, sizeOf, human, normalize, type Entry } from './fs'
@@ -316,7 +312,7 @@ export function registerCommands(t: Terminal, boot: { art: string }): void {
   })
   add({
     name: 'vim', desc: '', hidden: true,
-    run: (term) => term.print('<span class="dim">猜你想搜：</span>“如何退出 vim”'),
+    run: (term) => term.print('<span class="dim">vim: 没有安装，你不会困里面的（笑）</span>'),
   })
 }
 

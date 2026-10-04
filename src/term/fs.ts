@@ -2,11 +2,8 @@
  * 迷你文件系统。
  *
  * 不是假的"命令 → 固定回答"：`ls` 真的在读目录、`cat` 真的在读文件、
- * `view` 真的在打开图片。所以 `ls -a` 能多出一个文件、`cat` 能报"没有那个文件"，
+ * `view` 真的在打开图片。所以 `cat` 能报"没有那个文件"，
  * 这些行为都不用特判 —— 它们本来就是文件系统的行为。
- *
- * 隐藏文件（.pychess.py、.bashrc）只在 ls -a / ls -la 时出现，
- * 而且 help 里永远不会提。
  */
 import { PROJECTS } from '../data/projects'
 
@@ -52,7 +49,6 @@ XFY（xfy2412）—— 器不在大，适用则灵。
 - 网页：TypeScript、Vue / React
 - 移动端：Kotlin + Compose（见 RandomDice）
 
-联系方式在 links.txt 里。
 `
 
 const LINKS = `github    https://github.com/xfy2412

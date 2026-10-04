@@ -2,7 +2,6 @@
  * 终端引擎：提示符、回显、历史、Tab 补全、命令分发。
  *
  * 只负责"像终端"，不认识任何具体命令 —— 命令都在 commands.ts 里注册。
- * 游戏（.pychess.py）通过 interceptor 接管输入行，退出时交还。
  */
 
 export interface Command {
