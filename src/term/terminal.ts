@@ -6,7 +6,7 @@
 
 export interface Command {
   name: string
-  /** help 里的一行说明；hidden 的命令不会出现在 help 里 */
+  /** help 里显示的一行说明 */
   desc: string
   usage?: string
   hidden?: boolean
@@ -27,25 +27,41 @@ export class Terminal {
   readonly out: HTMLElement
   readonly input: HTMLInputElement
   readonly ps1: HTMLElement
+  private readonly promptline: HTMLElement
   private readonly scrollHost: HTMLElement
   private readonly cursor: HTMLElement
   private readonly mirror: HTMLElement
 
   cwd = '/'
   commands = new Map<string, Command>()
-  interceptor: Interceptor | null = null
   /** 开机横幅期间关掉自动滚动：让人先看见顶上的头像，而不是被拽到底部 */
   autoScroll = true
+
+  private _interceptor: Interceptor | null = null
+  /** 有命令在跑的时候收起命令栏 —— 真终端在它跑完之前不会再给提示符 */
+  private busy = false
+
+  get interceptor(): Interceptor | null {
+    return this._interceptor
+  }
+
+  set interceptor(fn: Interceptor | null) {
+    this._interceptor = fn
+    this.syncInputState()
+  }
 
   private history: string[] = []
   private historyIndex = 0
   private draft = ''
   private booting = false
+  /** 上一段是不换行打出来的（模拟 input() 的提示符）—— 下一次 print 要接在它后面 */
+  private partial: HTMLElement | null = null
 
   constructor(els: {
     out: HTMLElement
     input: HTMLInputElement
     ps1: HTMLElement
+    promptline: HTMLElement
     scrollHost: HTMLElement
     cursor: HTMLElement
     mirror: HTMLElement
@@ -53,6 +69,7 @@ export class Terminal {
     this.out = els.out
     this.input = els.input
     this.ps1 = els.ps1
+    this.promptline = els.promptline
     this.scrollHost = els.scrollHost
     this.cursor = els.cursor
     this.mirror = els.mirror
@@ -63,12 +80,34 @@ export class Terminal {
 
   /** 打印一行（接受 HTML，调用方自己保证安全） */
   print(html = ''): HTMLElement {
+    // 上一段没换行（input() 的提示符）→ 这一段接在它后面，合成一行
+    if (this.partial) {
+      const el = this.partial
+      this.partial = null
+      el.innerHTML += html
+      this.scrollToEnd()
+      return el
+    }
     const div = document.createElement('div')
     div.className = 'line'
     div.innerHTML = html
     this.out.appendChild(div)
     this.scrollToEnd()
     return div
+  }
+
+  /** 不换行地追加一段（真终端里 input(prompt) 就是这样：提示符和输入在同一行） */
+  printPartial(html: string): void {
+    if (this.partial) {
+      this.partial.innerHTML += html
+    } else {
+      const div = document.createElement('div')
+      div.className = 'line'
+      div.innerHTML = html
+      this.out.appendChild(div)
+      this.partial = div
+    }
+    this.scrollToEnd()
   }
 
   /** 打印纯文本（自动转义 + 链接化） */
@@ -91,6 +130,16 @@ export class Terminal {
     return el
   }
 
+  /** 原地更新的那一行（apt 的进度条用）：set 改内容，done 之后就不再动 */
+  liveLine(): { set: (html: string) => void; done: () => void } {
+    const el = this.print('')
+    let active = true
+    return {
+      set: (html: string) => { if (!active) return; el.innerHTML = html; this.scrollToEnd() },
+      done: () => { active = false },
+    }
+  }
+
   /** 打印一个现成的 DOM 块 */
   node(el: HTMLElement): HTMLElement {
     this.out.appendChild(el)
@@ -105,6 +154,7 @@ export class Terminal {
 
   clear(): void {
     this.out.replaceChildren()
+    this.partial = null
   }
 
   promptHTML(): string {
@@ -258,6 +308,31 @@ export class Terminal {
     return value
   }
 
+  /** 命令在跑（耗时命令）：收起命令栏、输入框只读；跑完自动恢复 */
+  setBusy(v: boolean): void {
+    this.busy = v
+    if (v) this.input.value = ''
+    this.syncInputState()
+  }
+
+  /**
+   * 命令栏与输入框的状态由两件事共同决定：
+   *   - busy：有耗时命令在跑
+   *   - interceptor：有人正等着我们输入（游戏问下一步走哪）
+   * 后者优先 —— 等输入时**必须能打字**，否则就成了"看得见却敲不进去"。
+   */
+  private syncInputState(): void {
+    const waiting = this._interceptor !== null
+    this.input.readOnly = this.busy && !waiting
+    const show = !this.busy || waiting
+    this.promptline.style.display = show ? '' : 'none'
+    if (!show) return
+    this.updateCursor()
+    // 能打字的状态（命令跑完了 / 正等人输入）就把焦点还给输入框：
+    // 隐藏命令栏的那一下浏览器会把焦点丢给 body，不还回来就得先点一下才能敲。
+    this.focus()
+  }
+
   async dispatch(line: string): Promise<void> {
     if (!line) return
     const [head, ...args] = line.split(/\s+/)
@@ -266,20 +341,32 @@ export class Terminal {
       this.print(`<span class="err">xfy-sh: ${esc(head)}: command not found</span>`)
       return
     }
+    const result = cmd.run(this, args, line)
+    const isAsync = !!result && typeof (result as Promise<unknown>).then === 'function'
+    if (isAsync) this.setBusy(true)
     try {
-      await cmd.run(this, args, line)
+      await result
     } catch (err) {
       this.print(`<span class="err">${esc(String(err))}</span>`)
+    } finally {
+      if (isAsync) this.setBusy(false)
     }
   }
 
   scrollToEnd(): void {
     if (!this.autoScroll) return
-    this.scrollHost.scrollTop = this.scrollHost.scrollHeight
+    const host = this.scrollHost
+    // 终端自己有滚动条（桌面）→ 滚它；窄屏下 max-height 被取消、是页面在滚 → 滚页面
+    if (host.scrollHeight > host.clientHeight + 4) {
+      host.scrollTop = host.scrollHeight
+      return
+    }
+    window.scrollTo({ top: document.documentElement.scrollHeight })
   }
 
   scrollToTop(): void {
     this.scrollHost.scrollTop = 0
+    window.scrollTo({ top: 0 })
   }
 }
 

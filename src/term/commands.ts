@@ -18,6 +18,39 @@ const ORG = 'https://github.com/xfyweb'
 const NPM = 'https://www.npmjs.com/~xfy2412'
 const MQE_DOCS = 'https://mqe.xfyweb.cn/docs/'
 
+/** 页面打开的时刻：neofetch 的 "Uptime" 就是它到现在 */
+const BOOTED_AT = Date.now()
+
+/** neofetch 的信息行：不是编的，是真从浏览器里读的 */
+function systemInfo(): string[] {
+  const ua = navigator.userAgent
+  const pick = (re: RegExp): string | undefined => ua.match(re)?.[1]
+  const browser =
+    pick(/Edg\/([\d.]+)/) ? `Edge ${pick(/Edg\/([\d.]+)/)}` :
+    pick(/OPR\/([\d.]+)/) ? `Opera ${pick(/OPR\/([\d.]+)/)}` :
+    pick(/Firefox\/([\d.]+)/) ? `Firefox ${pick(/Firefox\/([\d.]+)/)}` :
+    pick(/Chrome\/([\d.]+)/) ? `Chrome ${pick(/Chrome\/([\d.]+)/)}` :
+    pick(/Version\/([\d.]+).*Safari/) ? `Safari ${pick(/Version\/([\d.]+).*Safari/)}` :
+    '浏览器'
+  const os =
+    /Windows/.test(ua) ? 'Windows' :
+    /Android/.test(ua) ? 'Android' :
+    /iPhone|iPad|iPod/.test(ua) ? 'iOS' :
+    /Mac OS X/.test(ua) ? 'macOS' :
+    /Linux/.test(ua) ? 'Linux' : '未知系统'
+  const secs = Math.floor((Date.now() - BOOTED_AT) / 1000)
+  const uptime = secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${String(secs % 60).padStart(2, '0')}s`
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+  return [
+    `OS: ${os} · ${browser}`,
+    `Uptime: 本次访问 ${uptime}`,
+    `Locale: ${navigator.language}   时区: ${tz}`,
+    `Screen: ${screen.width}×${screen.height}   核心: ${navigator.hardwareConcurrency || '?'}`,
+    `Packages: 9 个项目，1 个组织`,
+    `Memory: 够用`,
+  ]
+}
+
 // ── 可复用的区块（开机横幅与命令共用）──────────────────────────────
 
 export function renderWhoami(t: Terminal, art: string): void {
@@ -268,12 +301,7 @@ export function registerCommands(t: Terminal, boot: { art: string }): void {
       const info = [
         `<span class="u">xfy</span><span class="p">@</span><span class="h">web</span>`,
         `<span class="dim">-----------</span>`,
-        `OS: XFY Linux`,
-        `Kernel: 6.x-自定义`,
-        `Shell: xfy-sh 1.0`,
-        `Uptime: 一直在跑`,
-        `Packages: 9 个项目，1 个组织`,
-        `Memory: 够用`,
+        ...systemInfo(),
       ]
       const rows = Math.max(art.length, info.length)
       for (let i = 0; i < rows; i++) {
@@ -297,10 +325,17 @@ export function registerCommands(t: Terminal, boot: { art: string }): void {
     run: (term, args) => term.text(args.join(' ')),
   })
 
-  // ── 彩蛋（help 里不出现）──────────────────────────────────────────
   add({
     name: 'sudo', desc: '', hidden: true,
-    run: (term) => term.print('<span class="err">sudo: no tty present and no askpass program specified</span>'),
+    run: (term, args, raw) => {
+      if (!args.length) {
+        term.print('<span class="err">sudo: no tty present and no askpass program specified</span>')
+        return
+      }
+      // sudo 就是把后面的命令跑起来 —— 这里也不例外
+      const rest = raw.trim().split(/\s+/).slice(1).join(' ')
+      void term.dispatch(rest)
+    },
   })
   add({
     name: 'rm', desc: '', hidden: true,

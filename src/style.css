@@ -88,7 +88,8 @@ body {
 .term::-webkit-scrollbar-thumb { background: var(--line); border-radius: 6px; }
 
 /* ── 文本角色 ───────────────────────────────────────────────────── */
-.line { white-space: pre-wrap; word-break: break-word; }
+/* 空行也占一行 —— 游戏用 print("\n"*29) 把上一局棋盘顶出屏幕，靠的就是这个 */
+.line { white-space: pre-wrap; word-break: break-word; min-height: calc(var(--fs) * var(--lh)); }
 .u { color: var(--green); }
 .h { color: var(--cyan); }
 .p { color: var(--dim); }

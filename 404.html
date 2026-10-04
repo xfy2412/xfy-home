@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 · xfyweb</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0a0e0c">
+<!-- 服务器用 error_page 内部重写到这里时，浏览器地址栏还是那个不存在的深层路径，
+     相对资源路径会被解析到 /foo/bar/assets/... —— 用 <base> 钉回站点根。 -->
+<base href="/">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<div class="win" role="region" aria-label="终端">
+  <div class="bar">
+    <i class="r"></i><i class="y"></i><i class="g"></i>
+    <span id="wintitle">xfy@web: ~</span>
+  </div>
+
+  <div class="term" id="term">
+    <div class="out" id="out"></div>
+    <div class="prompt" id="promptline">
+      <span class="ps1" id="ps1"><span class="u">xfy</span><span class="p">@</span><span class="h">web</span><span class="p">:~$</span></span>
+      <span class="ipwrap">
+        <input id="cmd" autocomplete="off" autocapitalize="off" autocorrect="off"
+               spellcheck="false" aria-label="命令输入">
+        <span class="cursor" id="cursor" aria-hidden="true"></span>
+        <span class="mirror" id="mirror" aria-hidden="true"></span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<noscript>
+  <div class="noscript">
+    <h1>404</h1>
+    <p>这个页面不存在。<a href="/">回主页</a></p>
+  </div>
+</noscript>
+
+<script type="module" src="/src/notfound.ts"></script>
+</body>
+</html>

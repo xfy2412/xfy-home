@@ -2,6 +2,7 @@ import './style.css'
 import avatarArt from './data/avatar.txt?raw'
 import { Terminal, setPathCompleter } from './term/terminal'
 import { registerCommands, renderLinks, renderProjects, renderWall, renderWhoami } from './term/commands'
+import { registerPythonCommands } from './term/py-commands'
 import { complete } from './term/fs'
 
 const $ = <T extends HTMLElement>(id: string): T => {
@@ -14,6 +15,7 @@ const term = new Terminal({
   out: $('out'),
   input: $<HTMLInputElement>('cmd'),
   ps1: $('ps1'),
+  promptline: $('promptline'),
   scrollHost: $('term'),
   cursor: $('cursor'),
   mirror: $('mirror'),
@@ -21,6 +23,7 @@ const term = new Terminal({
 
 setPathCompleter(complete)
 registerCommands(term, { art: avatarArt })
+registerPythonCommands(term)
 
 /** 顶栏右侧的时钟 */
 function tickClock(): void {

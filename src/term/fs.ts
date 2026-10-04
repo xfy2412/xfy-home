@@ -1,11 +1,11 @@
 /**
  * 迷你文件系统。
  *
- * 不是假的"命令 → 固定回答"：`ls` 真的在读目录、`cat` 真的在读文件、
- * `view` 真的在打开图片。所以 `cat` 能报"没有那个文件"，
- * 这些行为都不用特判 —— 它们本来就是文件系统的行为。
+ * `ls` 真的在读目录、`cat` 真的在读文件、`view` 真的在打开图片 ——
+ * 所以 `cat` 会报"没有那个文件"，这些行为都不用特判。
  */
 import { PROJECTS } from '../data/projects'
+import { GAME_FILE, GAME_SOURCE } from './py-commands'
 
 export interface FileNode {
   kind: 'file'
@@ -83,6 +83,7 @@ export const ROOT: DirNode = dir('/', [
   file('about.md', ABOUT),
   file('links.txt', LINKS),
   file('.bashrc', BASHRC, true),
+  file(GAME_FILE, GAME_SOURCE, true),
   dir('projects', PROJECTS.map(p =>
     file(`${p.slug}.md`, p.body ?? `# ${p.name}\n\n${p.desc}\n`)
   )),
@@ -122,7 +123,7 @@ export function resolve(cwd: string, path: string): Entry | null {
   return node
 }
 
-/** 列出目录内容；all=true 时包含隐藏文件 */
+/** 列出目录内容；all=true 时含点文件 */
 export function list(node: DirNode, all: boolean): Entry[] {
   return node.children
     .filter(c => all || !c.hidden)
